@@ -1,10 +1,12 @@
 <?php
 
-$pattern = '/ab(?P<foo>cd)ef/';
-$string = 'abcdefghi';
+$foo = array();
+$hoge = array();
 
-preg_match($pattern,$string,$matches);
+$foo =['1','2','3','4','5'];
+$hoge =['a','b','c','d','e'];
 
-var_dump($matches);
+
+print_r(array_merge($foo,$hoge));
 
 ?>
