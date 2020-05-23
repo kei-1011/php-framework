@@ -83,4 +83,16 @@ class DbManager {
   }
 
 
+  // データベースとの接続を開放する処理 __destruct　→　インスタンスが破棄された時に自動的に呼び出される
+  public function __destruct() {
+
+    foreach($this->repositories as $repository) {
+      unset($repository);
+    }
+
+    foreach($this->connections as $con) {
+      unset($con);
+    }
+  }
+
 }
