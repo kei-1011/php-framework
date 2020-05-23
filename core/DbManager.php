@@ -1,21 +1,10 @@
 <?php
 class DbManager {
 
-  /*  DbManagerクラスの使い方 ------
-  $db_manager = new DbManager();
-  $db_manager->connect('master',array(
-      'dsn'       =>  mysql:dbname;host=localhost,
-      'user'      =>  'root',
-      'password'  =>  'root',
-  ));
-  $db_manager->getConnection('master');
-  $db_manager->getConnection();　→　masterが返ってくる
 
-  */
-
-  // PDOクラスのインスタンスを配列で保持
-  protected $connections = array();
-
+  protected $connections = array();   // PDOクラスのインスタンスを配列で保持
+  protected $repository_connection_map = array(); // テーブルごとのRepositoryk流明日と接続名の対応を格納
+  protected $repositories = array();  // Repositoryクラスのインスタンスを管理
   /*
   db接続を行うメソッド
   $name 接続を特定するための名前 ($connectionsプロパティのキー)
@@ -44,7 +33,6 @@ class DbManager {
     $this->connections[$name] = $con;
   }
 
-
   /*
   connectメソッドで接続したコネクションを取得する
   名前の指定がされなかった場合、currentを使って取得
@@ -54,8 +42,45 @@ class DbManager {
 
     if(is_null($name)) {
       return current($this->connections);
+    } else {
+      return $this->connections[$name];
+    }
+  }
+
+  public function setRepositoryConnectionMap($repository_name, $name) {
+
+    $this->repository_connection_map[$repository_name] = $name;
+
+  }
+
+  //
+  public function getConnectionForRepository($repository_name) {
+
+    if(isset($this->repository_connection_map[$repository_name])) {
+
+      $name = $this->repository_connection_map[$repository_name];
+      $con  = $this->getConnection($name);
+    } else {
+
+      $con = $this->getConnection();
     }
 
-    return $this->connections[$name];
+    return $con;
   }
+
+  //インスタンスを生成,格納処理
+  public function get($repository_name) {
+    if(!isset($this->repositories[$repository_name])) {
+      $repository_class = $repository_name . 'Repository';        // クラス名を指定
+      $con = $this->getConnectionForRepository($repository_name); // コネクションを取得
+
+      $repository = new $repository_class($con);  // インスタンスを作成
+
+      $this->repositories[$repository_name] = $repository;
+    }
+
+    return $this->repositories[$repository_name];
+  }
+
+
 }
