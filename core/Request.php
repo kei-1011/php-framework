@@ -66,6 +66,11 @@ class Request {
   }
 
   // path infoを取得
+
+  /*
+  https://domain.com/user/edit?page=2
+  この場合のPATH_INFOは　「user/edit」
+  */
   public function getPathInfo () {
     $base_url = $this->getBaseUrl();
     $request_uri = $this->getRequestUri();
