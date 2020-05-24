@@ -1,12 +1,16 @@
 <?php
 
 $foo = array();
-$hoge = array();
 
-$foo =['1','2','3','4','5'];
-$hoge =['a','b','c','d','e'];
-
-
-print_r(array_merge($foo,$hoge));
-
+$foo[0] = ['name' => 'ai', 'age' => '1'];
+$foo[1] = ['name' => 'kou', 'age' => '31'];
+$foo[2] = ['name' => 'yuka', 'age' => '31'];
 ?>
+<pre>
+<?php
+foreach($foo as $value) {
+  $name[] = $value['name'];
+}
+print_r($name);
+?>
+</pre>
