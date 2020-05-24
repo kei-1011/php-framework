@@ -14,6 +14,7 @@ abstract class Controller {
   protected $response;
   protected $session;
   protected $db_manager;
+  protected $auth_actions = array();    // 配列型式でログインが必要なアクション名を指定
 
   public function __construct() {
     // コントローラ名を取得
@@ -37,6 +38,11 @@ abstract class Controller {
 
       //存在しない場合は404へ
       $this->foward404();
+    }
+
+    // needsAuthenticationの戻り値がtrueでかつ未ログインである場合、Exception例外を通知
+    if($this->needsAuthentication($action) && !$this->session->isAhthenticated()) {
+      throw new UnauthorizedActionException();
     }
 
     //アクションの実行
@@ -103,7 +109,7 @@ abstract class Controller {
     $key = 'csrf_tokens/' . $form_name;
     $tokens = $this->session->get($key, array());
 
-    // 最大10個のトークンを保持できる。
+    // 最大10個のトークンを保持できる。（複数画面同時展開に対応する）
     // 10個保持している場合は、array_shiftで古いものから削除する。
     if(count($tokens) >= 10) {
       array_shift($tokens); //  配列の先頭から一つ取り出す
@@ -128,6 +134,15 @@ abstract class Controller {
 
       unset($tokens[$pos]); //  変数を破棄
       $this->session->set($key, $tokens);
+
+      return true;
+    }
+
+    return false;
+  }
+  // ログインが必要かどうかの判定
+  protected function needsAuthentication($action) {
+    if($this->auth_actions === true || (is_array($this->auth_actions)) && in_array($action, $this->auth_actions)) {
 
       return true;
     }

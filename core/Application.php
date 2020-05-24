@@ -17,6 +17,7 @@ abstract class Application {
   protected $response;
   protected $session;
   protected $db_manager;
+  protected $login_action;
 
   public function __construct($debug = false) {
 
@@ -107,11 +108,13 @@ abstract class Application {
       $this->runAction($controller,$action,$params);
 
     } catch (HttpNotFoundException $e) {
-// 例外が発生した場合、40エラー画面を表示
+      // 例外が発生した場合、40エラー画面を表示
       $this->render404page($e);
-    }
 
-    $this->response->send();
+    } catch (UnauthorizedActionException $e) {
+      list($controller, $action) = $this->login_action;
+      $this->runAction($controller, $action);
+    }
   }
 
   /*　実際にアクションを実行する
