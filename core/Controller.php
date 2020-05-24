@@ -82,7 +82,6 @@ abstract class Controller {
 
   /*
   URLを引数として受け取り、Responseオブジェクトにリダイレクトする
-
   */
   protected function redirect($url) {
 
@@ -98,4 +97,42 @@ abstract class Controller {
     $this->response->setStatusCode(302,'Found');
     $this->response->setHttpHeader('Location', $url);
   }
+
+  //トークン生成
+  protected function generateCsrfToken($form_name) {
+    $key = 'csrf_tokens/' . $form_name;
+    $tokens = $this->session->get($key, array());
+
+    // 最大10個のトークンを保持できる。
+    // 10個保持している場合は、array_shiftで古いものから削除する。
+    if(count($tokens) >= 10) {
+      array_shift($tokens); //  配列の先頭から一つ取り出す
+    }
+
+    // 文字列のハッシュ化
+    $token = sha1($form_name . session_id() . microtime());
+    $tokens[] = $token;
+
+    // セッションに格納してトークンを返す
+    $this->session->set($key, $tokens);
+
+    return $token;
+  }
+
+  // リクエストされてきたトークンとセッションに格納されたトークンを比較した結果を返す
+  protected function checkCsrfToken($form_name, $token) {
+    $key = 'csrf_tokens/' . $form_name;
+    $tokens = $this->session->get($key, array());
+
+    if(false !== ($pos = array_search($token, $tokens, true))) {  // tokensの中身を調べる(sessionにトークンが格納されているか)
+
+      unset($tokens[$pos]); //  変数を破棄
+      $this->session->set($key, $tokens);
+
+      return true;
+    }
+
+    return false;
+  }
+
 }
