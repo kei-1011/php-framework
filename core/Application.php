@@ -18,7 +18,7 @@ abstract class Application {
   protected $session;
   protected $db_manager;
 
-  public function __construct() {
+  public function __construct($debug = false) {
 
     $this->setDebugMode($debug);
     $this->initialize();
@@ -177,5 +177,6 @@ abstract class Application {
   EOF
     );
   }
+
 
 }
