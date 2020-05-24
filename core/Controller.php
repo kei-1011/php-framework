@@ -44,4 +44,58 @@ abstract class Controller {
 
     return $content;
   }
+
+  /*
+  viewファイルの読み込み処理をラッピング
+  */
+  public function render($variables = array(), $template = null, $layout = 'layout') {
+
+    // デフォルト値の設定
+    $defaults = array(
+      'request'   => $this->request,
+      'base_url'  => $this->request->getBaseUrl(),
+      'session'   => $this->session,
+    );
+
+    // viewクラスのインスタンス化
+    // viewsディレクトリへのパスはApplicationクラスのgetViewDir()メソッドで取得できる
+    $view = new View($this->application->getViewDir(), $defaults);
+
+    // テンプレート名の指定　（第２引数）
+    if(is_null($template)) {
+      $template = $this->action_name; // nullの場合はアクション名をファイル名として返す
+    }
+
+    // コントローラ名をテンプレート名の先頭に付与
+    $path = $this->controller_name . '/' . $template;
+
+    // viewクラスのrenderメソッドを実行し、ビューファイルを読み込む
+    return $view->render($path, $variables, $layout);
+  }
+
+  // HttpNotFoundExceptionを通知、404エラー画面に遷移する
+  protected function forward404() {
+
+    throw new HttpNotFoundException('Fowarded 40 page from' . $this->controller_name . '/' . $this->action_name);
+
+  }
+
+  /*
+  URLを引数として受け取り、Responseオブジェクトにリダイレクトする
+
+  */
+  protected function redirect($url) {
+
+    if(!preg_match('#https?://#', $url)) {
+      $protocol = $this->request->isSsl() ? 'https://' : 'http://';
+      $host = $this->request->getHost();
+      $base_url = $this->request->getBaseUrl();
+
+      $url = $protocol . $host . $base_url . $url;
+    }
+
+    // ステータスコードを302に設定し、リダイレクトさせる
+    $this->response->setStatusCode(302,'Found');
+    $this->response->setHttpHeader('Location', $url);
+  }
 }
